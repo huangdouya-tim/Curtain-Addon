@@ -34,7 +34,7 @@ public class ExplosionMixin {
 
     @Inject(method = "explode", at = @At("HEAD"), cancellable = true)
     private void onExplosionA(CallbackInfo ci) {
-        if (CurtainRules.optimizedTNT) {
+        if (CurtainRules.optimizedTNT && level != null) {
             OptimizedExplosion.doExplosionA((Explosion) (Object) this, eLogger);
             ci.cancel();
         }
@@ -42,14 +42,14 @@ public class ExplosionMixin {
 
     @Inject(method = "finalizeExplosion", at = @At("HEAD"), cancellable = true)
     private void onExplosionB(boolean spawnParticles, CallbackInfo ci) {
-        if (eLogger != null) {
+        if (eLogger != null && level != null) {
             eLogger.setAffectBlocks(!toBlow.isEmpty());
             eLogger.onExplosionDone(this.level.getGameTime());
         }
         if (CurtainRules.explosionNoBlockDamage) {
             toBlow.clear();
         }
-        if (CurtainRules.optimizedTNT) {
+        if (CurtainRules.optimizedTNT && level != null) {
             OptimizedExplosion.doExplosionB((Explosion) (Object) this, spawnParticles);
             ci.cancel();
         }
@@ -65,7 +65,7 @@ public class ExplosionMixin {
 
     @Inject(method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;Lnet/minecraft/util/DamageSource;Lnet/minecraft/world/ExplosionContext;DDDFZLnet/minecraft/world/Explosion$Mode;)V", at = @At(value = "RETURN"))
     private void onExplosionCreated(World world, Entity entity, DamageSource damageSource, ExplosionContext explosionBehavior, double x, double y, double z, float power, boolean createFire, Explosion.Mode destructionType, CallbackInfo ci) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide && level != null) {
             eLogger = new ExplosionLogHelper(x, y, z, power, createFire, destructionType, level.registryAccess());
         }
     }
