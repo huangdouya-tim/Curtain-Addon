@@ -35,7 +35,7 @@ public class ExplosionMixin {
 
     @Inject(method = "explode", at = @At("HEAD"), cancellable = true)
     private void onExplosionA(CallbackInfo ci) {
-        if (CurtainRules.optimizedTNT) {
+        if (world != null && CurtainRules.optimizedTNT) {
             OptimizedExplosion.doExplosionA((Explosion) (Object) this, eLogger);
             ci.cancel();
         }
@@ -43,14 +43,14 @@ public class ExplosionMixin {
 
     @Inject(method = "finalizeExplosion", at = @At("HEAD"), cancellable = true)
     private void onExplosionB(boolean spawnParticles, CallbackInfo ci) {
-        if (eLogger != null) {
+        if (eLogger != null && level != null) {
             eLogger.setAffectBlocks(!toBlow.isEmpty());
             eLogger.onExplosionDone(this.level.getGameTime());
         }
         if (CurtainRules.explosionNoBlockDamage) {
             toBlow.clear();
         }
-        if (CurtainRules.optimizedTNT) {
+        if (CurtainRules.optimizedTNT && level != null) {
             OptimizedExplosion.doExplosionB((Explosion) (Object) this, spawnParticles);
             ci.cancel();
         }
@@ -67,7 +67,7 @@ public class ExplosionMixin {
     @Inject(method = "<init>(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Explosion$BlockInteraction;Lnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/core/Holder;)V",
             at = @At(value = "RETURN"))
     private void onExplosionCreated(Level pLevel, Entity pSource, DamageSource pDamageSource, ExplosionDamageCalculator pDamageCalculator, double pX, double pY, double pZ, float pRadius, boolean pFire, Explosion.BlockInteraction pBlockInteraction, ParticleOptions pSmallExplosionParticles, ParticleOptions pLargeExplosionParticles, Holder pExplosionSound, CallbackInfo ci) {
-        if (!pLevel.isClientSide) {
+        if (!pLevel.isClientSide && level != null) {
             eLogger = new ExplosionLogHelper(pX, pX, pZ, pRadius, pFire, pBlockInteraction, level.registryAccess());
         }
     }
